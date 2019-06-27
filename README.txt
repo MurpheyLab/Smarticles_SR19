@@ -7,6 +7,7 @@ Contents:
 -smarticle_dss_modelID.py: example script using DSS to instantiate a model from smarticle observations
 -smarticle_control.py: application of greedy controller for supersmarticle control using model
 -data/: folder containing representative data used for instantiating a supersmarticle model, as well as data from supersmarticle control runs.
+-dss_world.pkl: pickled DSS model extracted from supersmarticle demonstration
 
 ------------------------------------
 Dynamical System Segmentation (DSS)
