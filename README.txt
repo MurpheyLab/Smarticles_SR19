@@ -16,7 +16,7 @@ Dynamical System Segmentation (DSS)
 Description:
 -A family of models for system ID and control
 -Classifies similar dynamic behaviors or any set of sequential measurements given a set of basis functions/observations of data
--The basis functions must be specified for the particular system in a file basis.py that should be included. A sample file with the expected format is in examples/slip
+-The basis functions must be specified for the particular system in a file basis.py that should be included.
 
 Usage:
 -Needs basis functions for dynamics and classifier (second set can be None such that you only use one basis)
