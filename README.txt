@@ -1,3 +1,10 @@
+Packages Needed (using Python 2.7):
+-numpy
+-sklearn
+-hdbscan
+-seaborn
+-networkx
+
 
 Contents:
 -DSS.py: main DSS code
