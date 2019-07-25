@@ -29,7 +29,7 @@ class DSS:
 		self.overlap = 0
 		self.min_cluster_size = 0
 		self.cluster = []
-		self.gen_prob = True # makes the algorithm run slower, but gives prediction probabilities
+		self.gen_prob = False # makes the algorithm run slower, but gives prediction probabilities
 		self.classifier = SVC(kernel='linear', probability=self.gen_prob)
 
 		# Graph related
@@ -120,7 +120,6 @@ class DSS:
 		self.cluster.cluster()
 		self.cluster.reconcile()
 		self.nodes = self.cluster.koopman_hybrid_modes
-		# print self.nodes
 
 	def filter_noise(self,x_data,u_data=None):
 		"""
@@ -186,9 +185,12 @@ class DSS:
 		return self.nodes[class_id[0]].f(x,u)
 
 	def f_stochastic(self, x, u=None):
-		phik = self.svm_basis.fk(x,u)
-		dist = self.classifier.predict_proba(phik.reshape(1,self.svm_basis.nK).tolist())
-		node = np.random.choice(self.nodes, p=dist)
+		if self.gen_prob:
+			phik = self.svm_basis.fk(x,u)
+			dist = self.classifier.predict_proba(phik.reshape(1,self.svm_basis.nK).tolist())
+			node = np.random.choice(self.nodes, p=dist)
+		else:
+			raise ValueError('Must turn on self.gen_prob flag and generate SVM membership probabilities for f_stochastic to work.')
 		return node.f(x,u)
 		
 	def dfdx(self,x, u=None):
@@ -320,17 +322,9 @@ class DSS:
 		This plots the FSM generated
 		"""
 		class_num = len(self.nodes)
-		# palette = sns.color_palette("Set2",class_num)
-		# palette=[(0.6,0,0.6),(1,0,1),(1,0.6,1),(0.6,0,0),(.9,.1,.3),(1,.6,.6),(0.6,0.3,0),(1,.5,0),(1,.6,.2),(0.5,0.5,0),(1,0.9,0.1),(1,1,.5),(0.8,0.8,0.8),(0.4,0.4,0.4),(0,0,0)]
-		palette=[(0.6,0,0.6),(1,0,1),(1,0.6,1),(1,1,.7),(1,0.9,0.1),(1,.5,0),(1,.7,.3),(0.6,0,0),(1,.6,.6),(.9,.1,.3)]
-
+		palette = sns.color_palette("Set2",class_num)
 		g = plt.figure()
-		# pos = nx.spectral_layout(self.graph)
-		# pos = nx.fruchterman_reingold_layout(self.graph)
-		pos = nx.circular_layout(self.graph)
-		# pos = nx.shell_layout(self.graph)
-		# pos = nx.spring_layout(self.graph)
-		print self.graph
+		pos = nx.spring_layout(self.graph)
 		nx.draw_networkx(self.graph, pos, font_color='k', node_size=800, edge_color='k', node_color=[palette[node] for node in self.graph.nodes()], alpha=1.0)
 		plt.axis('off')
 
@@ -346,9 +340,7 @@ class DSS:
 		sp = plt.figure()
 		plot_kwds = {'alpha' : 0.3, 's' : 20, 'linewidths':0}
 		class_num = len(self.nodes)
-		palette=[(0.6,0,0.6),(1,0,1),(1,0.6,1),(0.6,0,0),(.9,.1,.3),(1,.6,.6),(0.6,0.3,0),(1,.5,0),(1,.6,.2),(0.5,0.5,0),(1,0.9,0.1),(1,1,.5),(0.8,0.8,0.8),(0.4,0.4,0.4),(0,0,0)]
-		# palette = sns.color_palette("Set2", class_num)
-		# palette = sns.color_palette("pastel", class_num)
+		palette = sns.color_palette("Set2", class_num)
 		for i in range(class_num):
 			mask = (self.state_labels == np.ones(np.shape(self.state_labels))*i)
 			plt.subplot(class_num, 1,class_num-i)
@@ -373,16 +365,13 @@ class DSS:
 		tp = plt.figure()
 		plot_kwds = {'alpha' : 0.3, 's' : 20, 'linewidths':0}
 		class_num = len(self.nodes)
-		palette=[(0.6,0,0.6),(1,0,1),(1,0.6,1),(0.6,0,0),(.9,.1,.3),(1,.6,.6),(0.6,0.3,0),(1,.5,0),(1,.6,.2),(0.5,0.5,0),(1,0.9,0.1),(1,1,.5),(0.8,0.8,0.8),(0.4,0.4,0.4),(0,0,0)]
-		# palette = sns.color_palette("Set2",class_num)
-		# palette = sns.color_palette("pastel", class_num)
+		palette = sns.color_palette("Set2",class_num)
 		cmap = ListedColormap(palette)
 		norm = BoundaryNorm(range(class_num+1), cmap.N)
 
 		if len(t) == 0:
 			t = np.linspace(0,len(full_state_control[0]),len(full_state_control[0]))
-# 		for i in range(self.basis.xSz+self.basis.uSz):
-		for i in range(10):
+		for i in range(self.basis.xSz+self.basis.uSz):
 			plt.subplot(self.basis.xSz+self.basis.uSz,1,i+1)
 			for j in range(class_num):
 				mask = (self.state_labels == np.ones(np.shape(self.state_labels))*j)
